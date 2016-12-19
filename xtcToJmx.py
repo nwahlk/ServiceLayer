@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from xml.dom import minidom
 import simplejson as json
-import os, fnmatch
-import shutil
+import os
 
 #precheck for xtc if meet requirements
 def pre_check(element):
@@ -15,10 +14,6 @@ def pre_check(element):
 		if method not in ('add','Add','update','Update','remove','Remove'):
 			return 0
     # Not support parameter contain "!"
-    # for object in element.getElementsByTagName('OBJECT'):
-		# not support code contain "!"
-		print str(object.getAttribute('Code'))
-		print str(object.getAttribute('Type'))
 		if '!' in str(object.getAttribute('Code')):
 			return 0
 		# not support service type now
@@ -34,17 +29,9 @@ def parse_element(element):
 		dict_data[totalnum_action] = dict()
 		method = child.getAttribute('Method')
 		title = child.getAttribute('Title')
-		# print title
-		# print len(child.childNodes)
-		# print child.childNodes[2]
 		dict_data[totalnum_action][0] = method
 		dict_data[totalnum_action][1] = title
-		# Get Object's Code and Type
-		# for child in child.getElementsByTagName('OBJECT'):
-		# 	for item in child.attributes.items():
-		# 		if item[0] == "Code" or item[0] == "Type":
-		# 			if not dict_data[totalnum_action][item[0]]:
-		# 				dict_data[totalnum_action][item[0]] = item[1]
+
 		if(child.getElementsByTagName('OBJECT') and child.getElementsByTagName('OBJECT')[0].hasAttribute('Code')):
 			code = child.getElementsByTagName('OBJECT')[0].getAttribute('Code')
 			dict_data[totalnum_action][2] = code
@@ -60,7 +47,7 @@ def parse_element(element):
 
 		if method == 'add' or method == 'Add' or method == 'update' or method == 'Update':
 			for att in mainObject.getElementsByTagName('put')[0].attributes.items():
-				if att[0] == "CardType" and att[1] != "":
+				if att[0] == "CardType":
 					if att[1] == "0":
 						cardType = "cCustomer"
 					elif att[1] == "1":
@@ -79,7 +66,7 @@ def parse_element(element):
 						objectName = objectName[:-1]
 					dict_data[totalnum_action][objectName] = {}
 					for att in object.getElementsByTagName('put')[0].attributes.items():
-						if att[0] == "CardType" and att[1] != "":
+						if att[0] == "CardType":
 							if att[1] == "0":
 								cardType = "cCustomer"
 							elif att[1] == "1":
@@ -93,32 +80,11 @@ def parse_element(element):
 							dict_data[totalnum_action][objectName][att[0]] = att[1]
 					if(dict_data[totalnum_action][objectName] == {}):
 						del dict_data[totalnum_action][objectName]
-		# if method == 'add' or method == 'Add' or method == 'update' or method == 'Update':
-		# 	for child in child.getElementsByTagName('put'):
-		# 		for item in child.attributes.items():
-		# 			# mapping cardtype code with enum
-		# 			if item[0] == "CardType" and item[1] != "":
-		# 				if item[1] == "0":
-		# 					cardType = "cCustomer"
-		# 				elif item[1] == "1":
-		# 					cardType = "cSupplier"
-		# 				elif item[1] == "2":
-		# 					cardType = "cLid"
-		# 				else:
-		# 					cardType = item[1]
-		# 				dict_data[totalnum_action][item[0]] = cardType
-		# 			elif item[1] != "":
-		# 				dict_data[totalnum_action][item[0]] = item[1]
 		elif method == 'compare' or method == 'Compare':
 			for child in child.getElementsByTagName('get'):
 				for item in child.attributes.items():
 					if item[1] != "":
 						dict_data[totalnum_action][item[0]] = item[1]
-		# else:
-		# 	for item in child.attributes.items():
-		# 		if item[1] != "":
-		# 			dict_data[totalnum_action][item[0]] = item[1]
-		# print dict_data[totalnum_action]
 		totalnum_action = totalnum_action + 1
 	return dict_data
 
@@ -215,18 +181,6 @@ def add_jmx_template(dom, dict_data,file_name):
 			else:
 				type = actionType
 
-		# if(dict_data[i].has_key('Code')):
-		# 	entryCode = dict_data[i]['Code']
-		# 	del dict_data[i]['Code']
-		# if (dict_data[i].has_key('Type')):
-		# 	actionType = dict_data[i]['Type']
-		# 	del dict_data[i]['Type']
-		# 	# Get type from mapping list
-		# 	if (actionType.isdigit()):
-		# 		type = type_list[int(actionType)]
-		# 	else:
-		# 		type = actionType
-		# name = type + " - " + name
 		if (method == 'update' or method == 'Update' or method == 'remove' or method == 'Remove'):
 			if(entryCode.isdigit()):
 				type = type + "(" + entryCode + ")"
@@ -236,9 +190,6 @@ def add_jmx_template(dom, dict_data,file_name):
 		del dict_data[i][0]
 		del dict_data[i][1]
 
-
-		# print i
-		# print dict_data[i]
 		enter_node = dom.createTextNode('\n')
 		Proxy_node = dom.createElement('HTTPSamplerProxy')
 		Proxy_node.setAttribute("guiclass", "HttpTestSampleGui")
@@ -380,185 +331,8 @@ def add_jmx_template(dom, dict_data,file_name):
 	# print item.nextSibling.nextSibling
 	return dom
 
-#add json to jmx, generate jmeter file
-# def add_jmx_testset(dom,dict_data):
-# 	for i in dict_data:
-# 		name = dict_data[i][0]
-# 		title = dict_data[i][1]
-# 		del dict_data[i][0]
-# 		del dict_data[i][1]
-# 		#print i
-# 		#print dict_data[i]
-# 		enter_node = dom.createTextNode('\n')
-# 		Proxy_node = dom.createElement('HTTPSamplerProxy')
-# 		Proxy_node.setAttribute("guiclass","HttpTestSampleGui")
-# 		Proxy_node.setAttribute("testclass","HTTPSamplerProxy")
-# 		Proxy_node.setAttribute("testname",name)
-# 		Proxy_node.setAttribute("enabled","true")
-# 		boolProp_node = dom.createElement('boolProp')
-# 		boolProp_node.setAttribute("name","HTTPSampler.postBodyRaw")
-# 		text = dom.createTextNode('true')
-# 		boolProp_node.appendChild(text)
-# 		Proxy_node.appendChild(enter_node)
-# 		Proxy_node.appendChild(boolProp_node)
-# 		Proxy_node.appendChild(enter_node)
-#
-# 		elementProp_node = dom.createElement('elementProp')
-# 		elementProp_node.setAttribute("elementType","Arguments")
-# 		elementProp_node.setAttribute("name","HTTPsampler.Arguments")
-#
-# 		collectionProp_node = dom.createElement('collectionProp')
-# 		collectionProp_node.setAttribute("name","Arguments.arguments")
-#
-# 		elementProp_node2 = dom.createElement('elementProp')
-# 		elementProp_node2.setAttribute("elementType","HTTPArgument")
-# 		elementProp_node2.setAttribute("name","")
-#
-# 		boolProp_node2 = dom.createElement('boolProp')
-# 		boolProp_node2.setAttribute("name","HTTPArgument.always_encode")
-# 		text = dom.createTextNode('false')
-# 		boolProp_node2.appendChild(text)
-# 		elementProp_node2.appendChild(boolProp_node2)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","Argument.value")
-# 		json_node = dom.createElement('')
-# 		text = dom.createTextNode(json.dumps(dict_data[i], sort_keys=True, indent=4))
-# 		stringProp_node.appendChild(text)
-# 		elementProp_node2.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","Argument.metadata")
-# 		json_node = dom.createElement('')
-# 		text = dom.createTextNode('=')
-# 		stringProp_node.appendChild(text)
-# 		elementProp_node2.appendChild(stringProp_node)
-#
-# 		collectionProp_node.appendChild(elementProp_node2)
-#
-# 		elementProp_node.appendChild(collectionProp_node)
-#
-# 		Proxy_node.appendChild(elementProp_node)
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.domain")
-# 		Proxy_node.appendChild(stringProp_node)
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.port")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.connect_timeout")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.response_timeout")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.protocol")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.contentEncoding")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.path")
-# 		text = dom.createTextNode('/b1s/v1/' + title)
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.method")
-# 		text = dom.createTextNode('POST')
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.follow_redirects")
-# 		text = dom.createTextNode('true')
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.auto_redirects")
-# 		text = dom.createTextNode('false')
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.use_keepalive")
-# 		text = dom.createTextNode('true')
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.DO_MULTIPART_POST")
-# 		text = dom.createTextNode('false')
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.monitor")
-# 		text = dom.createTextNode('false')
-# 		stringProp_node.appendChild(text)
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","HTTPSampler.embedded_url_re")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		stringProp_node = dom.createElement('stringProp')
-# 		stringProp_node.setAttribute("name","TestPlan.comments")
-# 		Proxy_node.appendChild(stringProp_node)
-#
-# 		item = dom.getElementsByTagName('TestFragmentController')[0]
-# 		item.nextSibling.nextSibling.appendChild(Proxy_node)
-#
-# 		hasTree_node = dom.createElement('hashTree')
-# 		item.nextSibling.nextSibling.appendChild(hasTree_node)
-# 		item.nextSibling.nextSibling.appendChild(enter_node)
-# 	#print item.nextSibling.nextSibling
-# 	return dom
-
-#add test seg to L_Controller
-# def add_controller(dom,segName):
-# 	enter_node = dom.createTextNode('\n')
-# 	Proxy_node = dom.createElement('IncludeController')
-# 	Proxy_node.setAttribute("guiclass","IncludeControllerGui")
-# 	Proxy_node.setAttribute("testclass","IncludeController")
-# 	Proxy_node.setAttribute("testname",segName)
-# 	Proxy_node.setAttribute("enabled","true")
-# 	stringProp_node = dom.createElement('stringProp')
-# 	stringProp_node.setAttribute("name","IncludeController.includepath")
-# 	text = dom.createTextNode(segName)
-# 	stringProp_node.appendChild(text)
-# 	Proxy_node.appendChild(enter_node)
-# 	Proxy_node.appendChild(stringProp_node)
-# 	Proxy_node.appendChild(enter_node)
-#
-# 	item = dom.getElementsByTagName('ThreadGroup')[0]
-# 	item.nextSibling.nextSibling.appendChild(Proxy_node)
-#
-# 	hasTree_node = dom.createElement('hashTree')
-# 	item.nextSibling.nextSibling.appendChild(hasTree_node)
-# 	item.nextSibling.nextSibling.appendChild(enter_node)
-# 	return dom
-
-# def convertXTCtoJMX(xtcFile,jmxTemplate):
-# 	dom = minidom.parse(xtcFile)
-# 	dict_data = parse_element(dom)
-# 	# print dict_data
-# 	jmxFileName = xtcFile.replace('.xtc', '.jmx')
-# 	jmxfile = open(jmxFileName, 'w')
-# 	jmx_dom = minidom.parse(jmxTemplate)
-# 	add_jmx_template(jmx_dom, dict_data).writexml(jmxfile)
-# 	jmxfile.close()
-# 	return jmxfile
-
-# add xtc to one jmx
-def addXtcToJmx(xtcFile,jmxTemplate,file_name):
-	# print xtcFile,jmxTemplate
+# add all xtc to one jmx
+def addXtcToOneJmx(xtcFile,jmxTemplate,file_name):
 	dom = minidom.parse(xtcFile)
 	# if pre_check(dom) == 0:
 	# 	# print xtcFile
@@ -572,14 +346,11 @@ def addXtcToJmx(xtcFile,jmxTemplate,file_name):
 	# print jmxfile
 	return jmxfile
 
-# Add xtc to different jmx
-def addXtcToMultiJmx(xtcFile,jmxTemplate,file_name):
-	# print xtcFile,jmxTemplate
+# Add one xtc to one jmx
+def addXtcToJmx(xtcFile,jmxTemplate,file_name):
 	dom = minidom.parse(xtcFile)
-	if pre_check(dom) == 0:
-		# print xtcFile
-		return
 	dict_data = parse_element(dom)
+	# print dict_data
 	jmxFileName = xtcFile.replace('.xtc', '.jmx')
 	jmxFile = open(jmxFileName, 'w')
 	jmx_dom = minidom.parse(jmxTemplate)
@@ -588,80 +359,15 @@ def addXtcToMultiJmx(xtcFile,jmxTemplate,file_name):
 	return jmxFile
 
 def batchConvertXTCtoJMX(xtcFolder,jmxTemplate):
-	# jmx = jmxTemplate
 	for root, dirs, files in os.walk(xtcFolder):
 		for name in files:
-			# print name
 			if name.endswith(".xtc"):
 				xtcFile = os.path.join(root, name)
 				file_name = name.split(".")[0]
-				addXtcToMultiJmx(xtcFile,jmxTemplate,file_name)
+				addXtcToJmx(xtcFile,jmxTemplate,file_name)
 				# addXtcToJmx(xtcFile, jmxTemplate, file_name)
-				# addJmxToXrt()
-				# print "end"
 
 if __name__ == '__main__':
 	xtcFolder = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\test\XTC\test'
 	jmxTemplate = r"D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\SLTemplate.jmx"
 	batchConvertXTCtoJMX(xtcFolder,jmxTemplate)
-
-# def findAndConvert(pattern, xtcPath,templatePath):
-# 	for root,dirs,files in os.walk(xtcPath):
-# 		print root
-# 		for name in files:
-# 			# print name
-# 			if fnmatch.fnmatch(name, pattern):
-# 				srcfile = os.path.join(root, name)
-# 				dom = minidom.parse(srcfile)
-# 				dict_data = parse_element(dom)
-# 				# xtcFile = srcfile.replace('.xtc','.json')
-# 				# f = open(xtcFile, 'w')
-# 				# f.write(json.dumps(dict_data, sort_keys=True, indent=4))
-# 				# f.close()
-#
-# 				jmxFileName = srcfile.replace('.xtc','.jmx')
-# 				jmxfile = open(jmxFileName,'w')
-# 				jmxTemplatePath = templatePath + "\\" + "TestSegTemplate.jmx"
-# 				jmx_dom = minidom.parse(jmxTemplatePath)
-# 				add_jmx_testset(jmx_dom,dict_data).writexml(jmxfile)
-# 				jmxfile.close()
-#
-# 				#add L_Controller
-# 				lcontrollerTemplatePath = templatePath + "\\" + "L_ControllerTemplate.jmx"
-# 				lcontrollerPath = os.path.join(root, "L_Controller.jmx")
-# 				if not os.path.exists(lcontrollerPath):
-# 					shutil.copy(lcontrollerTemplatePath,lcontrollerPath)
-# 				#update L_Controller
-# 				# print lcontrollerPath
-# 				l_dom = minidom.parse(lcontrollerPath)
-# 				# print l_dom
-# 				L_ControllerFile = open(lcontrollerPath,'w')
-# 				name = name.decode('ascii', 'ignore')
-# 				add_controller(l_dom,name.replace('.xtc','.jmx')).writexml(L_ControllerFile)
-# 				L_ControllerFile.close()
-
-
-# if __name__ == '__main__':
-# 	xtcPath = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayer\test\direct'
-# 	templatePath = r"D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools"
-# 	findAndConvert('*.xtc',xtcPath,templatePath)
-
-# def addLController(Path, templatePath):
-# 	for root,dirs,files in os.walk(Path):
-# 		# print root
-# 		for name in files:
-# 			# print name
-# 			if fnmatch.fnmatch(name, '*.jmx'):
-# 				# 1. generate a l controller to the folder if not exist;
-# 				# 2. add current name to l controller as a step
-# 				lcontrollerPath = Path + "\\" + "L_Controller.jmx"
-# 				if not os.path.exists(lcontrollerPath):
-# 					shutil.copy(templatePath + "\\" + "L_Controller.jmx",lcontrollerPath)
-# 				#add include controller under one
-# 				dom = minidom.parse(lcontrollerPath)
-# Step
-# 1.Get the xtc file from P4
-# 2.Use tool to generate jmx file
-# 3.Open the file in jmeter, add path
-# Tips:
-# 1.Get the service layer http url first
