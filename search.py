@@ -66,7 +66,7 @@ def findTotalCase(pattern, path):
 				totalNum = totalNum + 1
 	print totalNum
 
-# findTotalCase('*.xrt', r'\\10.58.1.26\9.2_dev\8.8 SP01')
+findTotalCase('*.xrt', r'\\10.58.1.26\9.2_dev\8.8 SP01')
 
 from xml.dom import minidom
 import simplejson as json
@@ -200,8 +200,8 @@ def replace_xrt(xrtFile,jmxFolder):
 	# print xrt_dom
 
 
-if __name__ == '__main__':
-	xrtFile = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\test\Sanity_DE_JVM.xrt'
-	jmxFolder = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\test\XTC\test'
-	# jmxTemplate = r"D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\SLTemplate.jmx"
-	replace_xrt(xrtFile,jmxFolder)
+# if __name__ == '__main__':
+# 	xrtFile = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\test\Sanity_DE_JVM.xrt'
+# 	jmxFolder = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\test\XTC\test'
+# 	# jmxTemplate = r"D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\SLTemplate.jmx"
+# 	replace_xrt(xrtFile,jmxFolder)

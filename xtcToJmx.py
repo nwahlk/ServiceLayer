@@ -364,10 +364,13 @@ def batchConvertXTCtoJMX(xtcFolder,jmxTemplate):
 			if name.endswith(".xtc"):
 				xtcFile = os.path.join(root, name)
 				file_name = name.split(".")[0]
-				addXtcToJmx(xtcFile,jmxTemplate,file_name)
+				try:
+					addXtcToJmx(xtcFile,jmxTemplate,file_name)
+				except Exception:
+					print Exception,":",file_name
 				# addXtcToJmx(xtcFile, jmxTemplate, file_name)
 
 if __name__ == '__main__':
-	xtcFolder = r'D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\test\XTC\test'
+	xtcFolder = r'D:\P4\BUSMB_B1\TestAutomation_B1\9.2_HANA_DEV\8.8\SDK\Sanity\Service Layer\Sanity_BR_DI\XTC'
 	jmxTemplate = r"D:\MyBox\Work\SAP\QA\TestCase\ServiceLayerTools\SLTemplate.jmx"
 	batchConvertXTCtoJMX(xtcFolder,jmxTemplate)
